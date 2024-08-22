@@ -1,4 +1,4 @@
-package genius
+package songbook
 
 import (
 	"encoding/json"
@@ -7,15 +7,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"unicode"
 
 	"github.com/PuerkitoBio/goquery"
-
-	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/songbook"
 	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/utils"
 )
 
-func GetTopHitSong(query string) (*songbook.Song, error) {
+func GetTopHitSong(query string) (*Song, error) {
 	accessToken := os.Getenv("GENIUS_ACCESS_TOKEN")
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.genius.com/search?q=%s", url.QueryEscape(query)), nil)
@@ -52,9 +49,9 @@ func GetTopHitSong(query string) (*songbook.Song, error) {
 		return nil, err
 	}
 
-	lyrics := GetLyrics(doc) // This is the function you should create
+	lyrics := getLyrics(doc) // This is the function you should create
 
-	song := &songbook.Song{
+	song := &Song{
 		Title:  hit.Title,
 		Artist: hit.PrimaryArtist.Name,
 		Lyrics: lyrics,
@@ -63,9 +60,9 @@ func GetTopHitSong(query string) (*songbook.Song, error) {
 	return song, nil
 }
 
-func GetLyrics(doc *goquery.Document) []songbook.Stanza {
-	var stanzas []songbook.Stanza
-	var currentStanza songbook.Stanza
+func getLyrics(doc *goquery.Document) []Stanza {
+	var stanzas []Stanza
+	var currentStanza Stanza
 	consecutiveBreaks := 0
 
 	doc.Find("div[class^='Lyrics__Container']").Each(func(i int, s *goquery.Selection) {
@@ -88,7 +85,7 @@ func GetLyrics(doc *goquery.Document) []songbook.Stanza {
 				if consecutiveBreaks >= 2 {
 					if len(currentStanza.Verses) > 0 {
 						stanzas = append(stanzas, currentStanza)
-						currentStanza = songbook.Stanza{}
+						currentStanza = Stanza{}
 					}
 					consecutiveBreaks = 0
 					return
@@ -131,49 +128,4 @@ func GetLyrics(doc *goquery.Document) []songbook.Stanza {
 	}
 
 	return stanzas
-}
-
-func addWordsToVerse(text string, stanza *songbook.Stanza) {
-	words := splitWords(text)
-
-	if len(stanza.Verses) == 0 {
-		stanza.Verses = append(stanza.Verses, songbook.Verse{})
-	}
-	currentVerse := &stanza.Verses[len(stanza.Verses)-1]
-
-	for _, word := range words {
-		*currentVerse = append(*currentVerse, songbook.Word{Text: word, Chord: []string{}})
-	}
-}
-
-func ensureVerseEnd(stanza *songbook.Stanza) {
-	if len(stanza.Verses) > 0 && len(stanza.Verses[len(stanza.Verses)-1]) > 0 {
-		stanza.Verses = append(stanza.Verses, songbook.Verse{})
-	}
-}
-
-func splitWords(text string) []string {
-	words := strings.FieldsFunc(text, func(r rune) bool {
-		return unicode.IsSpace(r)
-	})
-
-	var result []string
-	for _, word := range words {
-		subWords := strings.FieldsFunc(word, unicode.IsPunct)
-		for i, subWord := range subWords {
-			if subWord != "" {
-				result = append(result, subWord)
-				if i < len(subWords)-1 {
-					result = append(result, string(word[len(subWord)]))
-				}
-			}
-		}
-	}
-
-	return words
-}
-
-func cleanStanzaType(text string) string {
-	cleanText := strings.Trim(text, "[]")
-	return strings.TrimSpace(cleanText)
 }

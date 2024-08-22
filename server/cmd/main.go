@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
+	"net/http"
 
-	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/genius"
-	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/utils"
-
+	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/songbook"
 	"github.com/joho/godotenv"
 )
 
@@ -15,17 +14,8 @@ func main() {
 		panic(err)
 	}
 
-	searchQuery := "when i was your man"
-	topHitSong, err := genius.GetTopHitSong(searchQuery)
-	if err != nil {
-		panic(err)
-	}
+	songbook.Routes()
 
-	json, err := json.Marshal(topHitSong)
-	if err != nil {
-		panic(err)
-	}
-
-	utils.LogDebug("Top Hit Song: %s by %s", topHitSong.Title, topHitSong.Artist)
-	utils.LogDebug("Lyrics: %v", string(json))
+	fmt.Println("Server listening on http://localhost:8080/api/lyrics")
+	http.ListenAndServe(":8080", nil)
 }
