@@ -12,8 +12,9 @@ func LogDebug(title string, value ...any) {
 	}
 }
 
-func LogError(title string, value ...any) {
+func LogError(title string, value ...any) error {
 	if dev {
-		fmt.Printf(BASE_MESSAGE+title+"\n", value...)
+		return fmt.Errorf(BASE_MESSAGE+title+"\n", value...)
 	}
+	return nil
 }
