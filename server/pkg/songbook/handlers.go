@@ -7,7 +7,7 @@ import (
 	"github.com/RaiiaaGithub/vue-music-lyrics-app/pkg/utils"
 )
 
-func handleGetLyrics(w http.ResponseWriter, r *http.Request) {
+func getLyricsHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 
 	song, err := GetTopHitSong(query)
