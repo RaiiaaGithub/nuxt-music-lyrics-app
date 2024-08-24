@@ -8,7 +8,7 @@ type Song struct {
 }
 
 type Stanza struct {
-	Verses []Verse `json:"verse"`
+	Verses []Verse `json:"verses"`
 	Type   string  `json:"type,omitempty"`
 }
 
